@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:latest
+FROM pytorch/pytorch:1.4-cuda10.1-cudnn7-runtime
 LABEL maintainer="nishimura"
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -24,8 +24,6 @@ RUN pip --no-cache-dir install \
         h5py \
         ipykernel \
         jupyter \
-        keras_applications \
-        keras_preprocessing \
         matplotlib \
         pandas \
         scipy \
@@ -64,7 +62,7 @@ ENV BASE_URL="/"
 
 RUN cd /root/visdom && pip install .
 
-EXPOSE $PORT
+#EXPOSE $PORT
 
 COPY jupyter_notebook_config.py /root/.jupyter/
 
@@ -82,3 +80,7 @@ CMD python -m visdom.server \
     `if [ "x$READONLY" = "xTrue" ];then echo "-readonly";fi` \
     `if [ "x$FORCE_NEW_COOKIE" = "xTrue" ];then echo "-force_new_cookie";fi` \
     `if [ "x$ENABLE_LOGIN" = "xTrue" ];then echo "-enable_login";fi`
+
+EXPOSE 8888
+WORKDIR "/notebooks"
+CMD ["/run_jupyter.sh", "--allow-root"]

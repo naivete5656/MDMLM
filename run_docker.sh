@@ -1,3 +1,9 @@
 #!/bin/bash
 
-docker run --runtime=nvidia --rm -it --shm-size 50G -p 8888:8888 --name  pytorch -v $(pwd):/workdir -e PASSWORD=humanif -w /workdir pytorch_jupyter
+docker run --runtime=nvidia \
+     --rm -it \
+     -p 8097:8097 -p 8888:8888 \
+     --name root \
+     -v $(pwd):/workdir \
+     -e PASSWORD=password \
+     -w /workdir naivete5656/mdmlm bash

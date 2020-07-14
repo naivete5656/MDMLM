@@ -7,6 +7,63 @@ import torch
 from tqdm import tqdm
 from eval import eval_net
 import copy
+import argparse
+
+
+def parse_args():
+    """
+    Parse input arguments
+    """
+    parser = argparse.ArgumentParser(description="data path")
+    parser.add_argument(
+        "-r",
+        "--root_path",
+        dest="root_path",
+        help="root path",
+        default="./images/train",
+        type=str,
+    )
+    parser.add_argument(
+        "-s",
+        "--save_weght_path",
+        dest="save_path",
+        help="save path",
+        default="./weights",
+        type=str,
+    )
+    parser.add_argument(
+        "-g",
+        "--gpu",
+        dest="gpu",
+        help="whether use CUDA",
+        default=True,
+        action="store_true",
+    )
+    parser.add_argument(
+        "-v",
+        "--vis",
+        dest="vis",
+        help="whether use visdom",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "-b", "--batch_size", dest="batch_size", help="batch_size", default=8, type=int
+    )
+    parser.add_argument(
+        "-e", "--epochs", dest="epochs", help="epochs", default=100, type=int
+    )
+    parser.add_argument(
+        "-l",
+        "--learning_rate",
+        dest="learning_rate",
+        help="learning late",
+        default=1e-3,
+        type=float,
+    )
+
+    args = parser.parse_args()
+    return args
 
 
 class _TrainBase(VisShow):
@@ -35,15 +92,7 @@ class _TrainBase(VisShow):
         else:
             self.val_loader = None
 
-        self.criterion = kwargs["criterion"]
-        if "criterion2" in kwargs.keys():
-            self.criterion2 = kwargs["criterion2"]
-        else:
-            self.criterion2 = None
-        if "criterion3" in kwargs.keys():
-            self.criterion3 = kwargs["criterion3"]
-        else:
-            self.criterion3 = None
+        self.criterion = nn.MSELoss()
 
         self.optimizer = optim.Adam(self.net.parameters(), lr=kwargs["lr"])
         self.need_vis = kwargs["vis"]
@@ -121,15 +170,7 @@ class TrainNet(_TrainBase):
 
                 pred_img = self.net(img)
 
-                loss1 = self.criterion(pred_img, target)
-                loss = loss1
-                if self.criterion2 is not None:
-                    loss2 = self.criterion2(target - pred_img)
-                    loss = loss + loss2
-
-                if self.criterion3 is not None:
-                    loss3 = self.criterion3(pred_img, target)
-                    loss = loss + loss3
+                loss = self.criterion(pred_img, target)
 
                 self.epoch_loss += loss.item()
                 self.optimizer.zero_grad()
@@ -148,7 +189,7 @@ class TrainNet(_TrainBase):
                         param_group["lr"] = self.decay * param_group["lr"]
                 if self.need_vis:
                     self.update_vis_plot(
-                        iteration, [loss1.item()], self.iter_plot, None, "append"
+                        iteration, [loss.item()], self.iter_plot, None, "append"
                     )
                     self.update_vis_show(img[:, :, 8, :, :].cpu(), self.ori_view)
                     pred_img = pred_img - pred_img.min()
@@ -227,15 +268,17 @@ class TrainExtractNet(TrainNet):
 
 
 if __name__ == "__main__":
-    torch.cuda.set_device(1)
-    plot_size = 9
-    mode = "train"
+    args = parse_args()
+    for condition in ["Control", "FGF2", "BMP2", "FGF2+BMP2"]:
+        Groupes = {
+            "Control": [1, 2, 3],
+            "FGF2": [5, 6, 7],
+            "BMP2": [9, 10, 11],
+            "FGF2+BMP2": [13, 14, 15],
+        }
+        root_path = Path(args.root_path)
 
-    for num in [1, 2, 3, 4]:
-        Groupes = {1: [1, 2, 3], 2: [5, 6, 7], 3: [9, 10, 11], 4: [13, 14, 15]}
-        root_path = Path(f"./images/{mode}")
-
-        seqs = Groupes[num]
+        seqs = Groupes[condition]
 
         train_paths = [
             root_path.joinpath(f"F{seqs[0]:04d}"),
@@ -243,31 +286,30 @@ if __name__ == "__main__":
         ]
 
         val_paths = [
-            root_path.parent.joinpath(f"{mode}_val/F{seqs[0]:04d}"),
-            root_path.parent.joinpath(f"{mode}_val/F{seqs[1]:04d}"),
+            root_path.parent.joinpath(f"val/F{seqs[0]:04d}"),
+            root_path.parent.joinpath(f"val/F{seqs[1]:04d}"),
         ]
 
-        save_weights_path = Path(f"./weights/{mode}/Group_{num}/best.pth")
+        save_weights_path = Path(f"./weights").joinpath(f"Group_{condition}/best.pth")
         save_weights_path.parent.joinpath("epoch_weight").mkdir(
             parents=True, exist_ok=True
         )
         save_weights_path.parent.mkdir(parents=True, exist_ok=True)
 
         net = VNet(elu=False, nll=False, sig=False)
-        net.cuda()
+        if args.gpu:
+            net.cuda()
 
         args = {
-            "gpu": True,
-            "batch_size": 8,
-            "epochs": 100,
-            "lr": 1e-3,
+            "gpu": args.gpu,
+            "batch_size": args.batch_size,
+            "epochs": args.epochs,
+            "lr": args.learning_rate,
             "train_paths": train_paths,
             "val_paths": val_paths,
             "save_weight_path": save_weights_path,
             "net": net,
-            "vis": False,
-            "plot_size": plot_size,
-            "criterion": nn.MSELoss(),
+            "vis": args.vis,
         }
         train = TrainExtractNet(**args)
         train.main()

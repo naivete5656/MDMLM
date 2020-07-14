@@ -2,7 +2,7 @@
 
 [[Home]](http://human.ait.kyushu-u.ac.jp/index-e.html) [[Paper]](https://arxiv.org/abs/2004.12531) 
 
-![Illustration](image/mitosisdetection_overview.png)
+![Illustration](mitosisdetection_overview.png)
 
 ## Prerequisites
 * System (tested on Ubuntu 18.04LTS)
@@ -35,11 +35,26 @@ https://media.m2i.ac.cn/mitosisdetection/download/
 ## How to use
 1. Candidate path image extraction based on the brightness
 
+  ```matlab
+  matlab -nodesktop -nosplash -r "candidate_extractor('/home/kazuya/ssd/cvpr_workshop/CVPR_workshop/', './output/')"
+  ```
+
 1. Generate ground truth from candidate
+
+  ```python
+  python generate_ground_truth.py
+  ```
 
 1. Train V-Net
 
+  ```python
+  python train.py
+  ```
+
 1. Prediction by V-Net
+  ```python
+  python predict.py
+  ```
 
 ## Citation
 If you use this code for your research, please cite:

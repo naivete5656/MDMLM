@@ -1,6 +1,6 @@
-clear all;
+function candidate_extractor(indir_path, outdir_path)
+indir_path
 addpath('./candidate_func');
-
 param.first_frame_no = 1;
 param.delayed_frame_no = 20;
 
@@ -12,9 +12,9 @@ scale = 1.0;
 threshold_decision = 0.0;
 
 for fidx=1:16
-    indir = sprintf('/input_file_path/F%04d/',fidx);
+    indir = sprintf([indir_path 'F%04d/'], fidx);
     outpref = 'Cell_seq01_';
-    outdir = sprintf('./output/candidate/F%04d/',fidx);
+    outdir = sprintf([outdir_path 'F%04d/'],fidx);
     mkdir(outdir);
 
     param.InputImgPost = '.tif';
@@ -67,4 +67,7 @@ for fidx=1:16
 
         imgprocessed = totimgs + 1;
     end
+end
+
+exit
 end
