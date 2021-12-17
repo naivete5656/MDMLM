@@ -29,8 +29,7 @@ sh run_docker.sh
 ## Data Preparation 
 
 Please download data and annotation from follows web site and unzip all files and put on this folder.
-
-https://media.m2i.ac.cn/mitosisdetection/download/
+https://www.iti-tju.org/mitosisdetection/download/
 
 ## How to use
 1. Candidate path image extraction based on the brightness
