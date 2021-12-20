@@ -29,7 +29,8 @@ sh run_docker.sh
 ## Data Preparation 
 
 CVPR 2019 Contest on Mitosis Detection in Phase Contrast Microscopy Image Sequences
-Prease follow the guideline.
+
+To use dataset, prease follow the guideline.
 Please download data and annotation from follows web site and unzip all files and put on this folder.
 https://www.iti-tju.org/mitosisdetection/download/
 
