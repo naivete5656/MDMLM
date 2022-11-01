@@ -38,7 +38,7 @@ https://ieeexplore.ieee.org/abstract/document/9328484?casa_token=XLj19UfXiEwAAAA
 1. Candidate path image extraction based on the brightness
 
   ```matlab
-  matlab -nodesktop -nosplash -r "candidate_extractor('/home/kazuya/ssd/cvpr_workshop/CVPR_workshop/', './output/')"
+  matlab -nodesktop -nosplash -r "candidate_extractor(dataset_directory, './output/')"
   ```
 
 1. Generate ground truth from candidate
